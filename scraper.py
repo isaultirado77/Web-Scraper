@@ -10,12 +10,20 @@ def get_request(url: str, headers: dict = None):
     return requests.get(url, headers=headers)
 
 
+def get_joke(request) -> str:
+    try:
+        data = request.json()
+        return data['joke']
+    except KeyError:
+        print('Invalid resource!')
+
+
 def main() -> None:
-    url = 'https://icanhazdadjoke.com/j/LBAQ79MJmb'
+    url = read_url()
     request = get_request(url, {'Accept': 'application/json'})
     if request.status_code == 200:
-        data = request.json()
-        print(data['joke'])
+        joke = get_joke(request)
+        print(joke)
     else:
         print('Invalid resource!')
 
