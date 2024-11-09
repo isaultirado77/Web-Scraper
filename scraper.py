@@ -2,31 +2,29 @@ import requests
 from bs4 import BeautifulSoup
 
 
+class InvalidPageException(Exception):
+    def __init__(self, msg):
+        super.__init__(msg)
+
+
 def read_url() -> str:
     url = input('Intput thr URL: \n')
+    if 'nature' not in url and 'articles' not in url:
+        raise InvalidPageException('Invalid page!')
     return url
 
 
-def get_request(url: str, headers: dict = None):
+def get_response(url: str, headers: dict = None):
     return requests.get(url, headers=headers)
 
 
-def get_joke(request) -> str:
-    try:
-        data = request.json()
-        return data['joke']
-    except KeyError:
-        print('Invalid resource!')
-
-
 def main() -> None:
-    url = read_url()
-    request = get_request(url, {'Accept': 'application/json'})
-    if request.status_code == 200:
-        joke = get_joke(request)
-        print(joke)
-    else:
-        print('Invalid resource!')
+    try:
+        url = read_url()
+        response = get_response(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+    except InvalidPageException as e:
+        print(f'Error: {e}')
 
 
 if __name__ == '__main__':
