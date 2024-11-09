@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-r = requests.get('https://www.newsinlevels.com/products/albino-tortoise-level-1/')
+r = requests.get('https://www.nature.com/articles/d41586-022-04498-3')
 
 # Create a parse tree
 # r.content: data of the page
@@ -11,13 +11,9 @@ soup = BeautifulSoup(r.content, 'html.parser')
 
 def main():
     print('Status Request', r.status_code, end='\n')
-    # print(soup.prettify())  # Give a format to the tree
-    # print(soup.find('title'))
-    # print(soup.head)
-    paragraphs = soup.find_all('p', {'style': 'text-align: center;'})
-    for p in paragraphs:
-        print(p.text + '\n')
-
-
-if __name__ == '__main__':
-    main()
+    title_tag = soup.find('title')
+    title = title_tag.get_text(strip=True) if title_tag else "No title found"
+    print(title)
+    description_tag = soup.find('meta', {'name': 'description'})
+    description = description_tag['content'].strip() if description_tag else "No description found"
+    print(description)
