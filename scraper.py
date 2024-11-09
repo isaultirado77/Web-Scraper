@@ -1,4 +1,5 @@
 import requests
+from bs4 import BeautifulSoup
 
 
 def read_url() -> str:
@@ -29,5 +30,4 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    # print('requests version: ', requests.__version__)
     main()
