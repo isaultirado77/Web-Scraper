@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from http import HTTPStatus
 
 
 class InvalidPageException(Exception):
@@ -16,12 +17,12 @@ def read_url() -> str:
 
 def get_response(url: str, headers: dict = None):
     response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        raise InvalidPageException('Invalid page!')
+    if response.status_code != HTTPStatus.OK:
+        raise InvalidPageException(f'The URL returned {response.status_code}')
     return response
 
 
-def scrape_nature_article(response):
+def scrape_title_description_article(response):
     soup = BeautifulSoup(response.content, 'html.parser')
 
     # Get title
@@ -35,12 +36,18 @@ def scrape_nature_article(response):
     return {"title": title, "description": description}
 
 
+def save_page_content(response):
+    content = response.content
+    with open('source.html', 'wb') as file:  # using 'wb' to save the content in binary mode
+        file.write(content)
+        print('Content saved.')
+
+
 def main() -> None:
     try:
         url = read_url()
         response = get_response(url)
-        nature_article = scrape_nature_article(response)
-        print(nature_article)
+        save_page_content(response)
     except InvalidPageException as e:
         print(f'Error: {e}')
 
