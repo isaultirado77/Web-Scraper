@@ -20,7 +20,7 @@ def get_response(url: str, headers: dict = None):
     return response
 
 
-def scrape_title_description_article(response):
+def get_title_description_article(response):
     soup = BeautifulSoup(response.content, 'html.parser')
 
     # Get title
@@ -34,7 +34,7 @@ def scrape_title_description_article(response):
     return {"title": title, "description": description}
 
 
-def save_page_content(response):
+def response_to_html(response):
     content = response.content
     with open('source.html', 'wb') as file:  # using 'wb' to save the content in binary mode
         file.write(content)
@@ -45,7 +45,6 @@ def main() -> None:
     try:
         url = read_url()
         response = get_response(url)
-        save_page_content(response)
     except InvalidPageException as e:
         print(f'Error: {e}')
 
