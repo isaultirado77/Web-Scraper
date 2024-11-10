@@ -10,8 +10,6 @@ class InvalidPageException(Exception):
 
 def read_url() -> str:
     url = input('Intput thr URL: \n')
-    if 'nature' not in url and 'articles' not in url:
-        raise InvalidPageException('Invalid page!')
     return url
 
 
