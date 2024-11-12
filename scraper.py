@@ -20,7 +20,25 @@ def get_response(url: str, headers: dict = None):
     return response
 
 
-def scrape_nature_article(url: str):
+def scrape_article_links(url: str) -> list:
+    response = get_response(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    article_links = list()
+
+    articles_tag = soup.findAll(name='article')
+
+    for article in articles_tag:
+        span_tag = article.find(name='span', attrs={'data-test': 'article.type'})
+
+        if span_tag and span_tag.get_text(strip=True) == "News":
+            article_link = article.find(name='a', attrs={'data-track-action': 'view article'})
+            if article_link:
+                article_url = article_link.get('href')
+                article_links.append(article_url)
+    return article_links
+
+
+def scrape_nature_article(url: str) -> dict:
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -33,8 +51,10 @@ def scrape_nature_article(url: str):
     description = desc_tag['content'].strip() if desc_tag else "No description found"
 
     # Get body
+    body_tag = soup.find(name='p', attrs={"class": "article__teaser"})
+    body = body_tag.get_text(strip=True)
 
-    return {"title": title, "description": description}
+    return {"title": title, "description": description, 'body': body}
 
 
 def response_to_html(response):
@@ -47,19 +67,7 @@ def response_to_html(response):
 def main() -> None:
     try:
         url = 'https://www.nature.com/nature/articles?sort=PubDate&year=2020&page=3'
-        response = get_response(url)
-        soup = BeautifulSoup(response.content, 'html.parser')
-        articles_tag = soup.findAll(name='article')
-        print('Total articles: ', len(articles_tag))
 
-        for article in articles_tag:
-            span_tag = article.find(name='span', attrs={'data-test': 'article.type'})
-
-            if span_tag and span_tag.get_text(strip=True) == "News":
-                article_link = article.find(name='a', attrs={'data-track-action': 'view article'})
-                if article_link:
-                    article_url = article_link.get('href')
-                    print(article_url)
 
 
     except InvalidPageException as e:
