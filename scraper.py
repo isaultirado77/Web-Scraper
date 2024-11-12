@@ -20,7 +20,8 @@ def get_response(url: str, headers: dict = None):
     return response
 
 
-def get_title_description_article(response):
+def scrape_nature_article(url: str):
+    response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
 
     # Get title
@@ -28,8 +29,10 @@ def get_title_description_article(response):
     title = title_tag.get_text(strip=True) if title_tag else "No title found"
 
     # Get description
-    desc_tag = soup.find('meta', {'name': 'description'})
+    desc_tag = soup.find(name='meta', attrs={'name': 'description'})
     description = desc_tag['content'].strip() if desc_tag else "No description found"
+
+    # Get body
 
     return {"title": title, "description": description}
 
@@ -43,8 +46,22 @@ def response_to_html(response):
 
 def main() -> None:
     try:
-        url = read_url()
+        url = 'https://www.nature.com/nature/articles?sort=PubDate&year=2020&page=3'
         response = get_response(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        articles_tag = soup.findAll(name='article')
+        print('Total articles: ', len(articles_tag))
+
+        for article in articles_tag:
+            span_tag = article.find(name='span', attrs={'data-test': 'article.type'})
+
+            if span_tag and span_tag.get_text(strip=True) == "News":
+                article_link = article.find(name='a', attrs={'data-track-action': 'view article'})
+                if article_link:
+                    article_url = article_link.get('href')
+                    print(article_url)
+
+
     except InvalidPageException as e:
         print(f'Error: {e}')
 
