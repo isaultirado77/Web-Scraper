@@ -34,7 +34,7 @@ def scrape_article_links(url: str) -> list:
             article_link = article.find(name='a', attrs={'data-track-action': 'view article'})
             if article_link:
                 article_url = article_link.get('href')
-                article_links.append(article_url)
+                article_links.append('https://www.nature.com' + article_url)
     return article_links
 
 
@@ -57,6 +57,17 @@ def scrape_nature_article(url: str) -> dict:
     return {"title": title, "description": description, 'body': body}
 
 
+def data_to_txt(data_list: list) -> None:
+    if data_list is None:
+        return
+
+    for data in data_list:
+        file_name = f'{data['title']}.txt'
+        with open(file_name, 'w') as file:
+            file.write(data['body'])
+    print(f'Saved articles: {''.join([f'{item['title']}.txt' for item in data_list])}')
+
+
 def response_to_html(response):
     content = response.content
     with open('source.html', 'wb') as file:  # using 'wb' to save the content in binary mode
@@ -67,8 +78,11 @@ def response_to_html(response):
 def main() -> None:
     try:
         url = 'https://www.nature.com/nature/articles?sort=PubDate&year=2020&page=3'
-
-
+        links = scrape_article_links(url)
+        data = []
+        for link in links:
+            data.append(scrape_nature_article(link))
+        data_to_txt(data)
 
     except InvalidPageException as e:
         print(f'Error: {e}')
