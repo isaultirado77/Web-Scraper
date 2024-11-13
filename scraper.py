@@ -1,3 +1,5 @@
+import string
+
 import requests
 from bs4 import BeautifulSoup
 from http import HTTPStatus
@@ -58,14 +60,14 @@ def scrape_nature_article(url: str) -> dict:
 
 
 def data_to_txt(data_list: list) -> None:
-    if data_list is None:
-        return
-
-    for data in data_list:
-        file_name = f'{data['title']}.txt'
-        with open(file_name, 'w') as file:
-            file.write(data['body'])
-    print(f'Saved articles: {''.join([f'{item['title']}.txt' for item in data_list])}')
+    if data_list:
+        for data in data_list:
+            title = str(data['title']).translate(str.maketrans('', '', string.punctuation)).replace(' ', '_')
+            body_text = data['body']
+            with open(f'{title}.txt', 'w', encoding='utf-8') as file:
+                file.write(body_text)
+    else:
+        print('No data found. ')
 
 
 def response_to_html(response):
