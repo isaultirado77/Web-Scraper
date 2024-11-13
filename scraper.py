@@ -100,14 +100,22 @@ def get_next_page_urls(url: str, narticles: int):
     return next_urls
 
 
+def get_articles_link_per_page(pages_urls: list, article_type: str):
+    articles_links_per_page = []
+    for url in pages_urls:
+        articles_link = scrape_articles_links(url, article_type)
+        articles_links_per_page.append(articles_link)
+    return articles_links_per_page
+
+
 def main() -> None:
     try:
         url = 'https://www.nature.com/nature/articles?sort=PubDate&year=2020'
-        # narticles = int(input())
-        # article_type = input()
-        next_page_urls = get_next_page_urls(url, 4)
-        print(next_page_urls)
-
+        narticles = int(input())
+        article_type = input()
+        next_page_urls = get_next_page_urls(url, narticles)
+        articles_links_per_page = get_articles_link_per_page(next_page_urls, article_type)
+        print(articles_links_per_page)
     except InvalidPageException as e:
         print(f'Error: {e}')
     except ValueError:
