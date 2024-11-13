@@ -1,6 +1,6 @@
 import string
-
 import requests
+import os
 from bs4 import BeautifulSoup
 from http import HTTPStatus
 
@@ -66,15 +66,19 @@ def remove_punctuation(text: str) -> str:
     return text
 
 
-def data_to_txt(data_list: list) -> None:
+def data_to_txt(data_list: list, N: int) -> None:
+    folder_name = f'Page_{N}'
+    os.makedirs(folder_name, exist_ok=True)
+
     if data_list:
         for data in data_list:
             title = remove_punctuation(data['title']).replace(' ', '_')
             body_text = data['body']
-            with open(f'{title}.txt', 'w', encoding='utf-8') as file:
+            file_path = os.path.join(folder_name, f'{title}.txt')
+            with open(file_path, 'w', encoding='utf-8') as file:
                 file.write(body_text)
     else:
-        print('No data found. ')
+        print('No data found.')
 
 
 def response_to_html(response):
@@ -115,7 +119,7 @@ def main() -> None:
         article_type = input()
         next_page_urls = get_next_page_urls(url, narticles)
         articles_links_per_page = get_articles_link_per_page(next_page_urls, article_type)
-        print(articles_links_per_page)
+
     except InvalidPageException as e:
         print(f'Error: {e}')
     except ValueError:
