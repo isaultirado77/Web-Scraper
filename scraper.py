@@ -59,10 +59,17 @@ def scrape_nature_article(url: str) -> dict:
     return {"title": title, "description": description, 'body': body}
 
 
+def remove_punctuation(text: str) -> str:
+    for symbol in string.punctuation:
+        if symbol in text:
+            text.replace(symbol, '')
+    return text
+
+
 def data_to_txt(data_list: list) -> None:
     if data_list:
         for data in data_list:
-            title = str(data['title']).translate(str.maketrans('', '', string.punctuation)).replace(' ', '_')
+            title = remove_punctuation(data['title']).replace(' ', '_')
             body_text = data['body']
             with open(f'{title}.txt', 'w', encoding='utf-8') as file:
                 file.write(body_text)
@@ -79,15 +86,12 @@ def response_to_html(response):
 
 def main() -> None:
     try:
-        url = 'https://www.nature.com/nature/articles?sort=PubDate&year=2020&page=3'
-        links = scrape_article_links(url)
-        data = []
-        for link in links:
-            data.append(scrape_nature_article(link))
-        data_to_txt(data)
+        url = 'https://www.nature.com/nature/articles?sort=PubDate&year=2020'
 
     except InvalidPageException as e:
         print(f'Error: {e}')
+    except ValueError:
+        print('Error: Enter a valid number. ')
 
 
 if __name__ == '__main__':
