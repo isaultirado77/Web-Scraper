@@ -1,6 +1,8 @@
+import os
+import shutil
+
 import string
 import requests
-import os
 from bs4 import BeautifulSoup
 from http import HTTPStatus
 
@@ -66,13 +68,13 @@ def remove_punctuation(text: str) -> str:
     return text
 
 
-def data_to_txt(data_list: list, N: int) -> None:
-    folder_name = f'Page_{N}'
+def data_to_txt(data_list: list, n: int) -> None:
+    folder_name = f'Page_{n}'
     os.makedirs(folder_name, exist_ok=True)
 
     if data_list:
         for data in data_list:
-            title = remove_punctuation(data['title']).replace(' ', '_')
+            title = str(data['title']).translate(str.maketrans('', '', string.punctuation)).replace(' ', '_')
             body_text = data['body']
             file_path = os.path.join(folder_name, f'{title}.txt')
             with open(file_path, 'w', encoding='utf-8') as file:
@@ -112,6 +114,13 @@ def get_articles_link_per_page(pages_urls: list, article_type: str):
     return articles_links_per_page
 
 
+def delete_folders(n: int) -> None:
+    for i in range(n):
+        folder = f'Page_{i + 1}'
+        if os.path.isdir(folder):  # Check if it's a directory
+            shutil.rmtree(folder)  # Remove non-empty directory and all contents
+
+
 def main() -> None:
     try:
         url = 'https://www.nature.com/nature/articles?sort=PubDate&year=2020'
@@ -119,6 +128,14 @@ def main() -> None:
         article_type = input()
         next_page_urls = get_next_page_urls(url, narticles)
         articles_links_per_page = get_articles_link_per_page(next_page_urls, article_type)
+
+        delete_folders(narticles)
+        for n, links in enumerate(articles_links_per_page):
+            data_list = []
+            for link in links:
+                data_list.append(scrape_nature_article(link))
+            data_to_txt(data_list, n + 1)
+        print('Saved all articles.')
 
     except InvalidPageException as e:
         print(f'Error: {e}')
