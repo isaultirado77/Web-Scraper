@@ -22,7 +22,7 @@ def get_response(url: str, headers: dict = None):
     return response
 
 
-def scrape_article_links(url: str) -> list:
+def scrape_articles_links(url: str, article_type: str) -> list:
     response = get_response(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     article_links = list()
@@ -32,7 +32,7 @@ def scrape_article_links(url: str) -> list:
     for article in articles_tag:
         span_tag = article.find(name='span', attrs={'data-test': 'article.type'})
 
-        if span_tag and span_tag.get_text(strip=True) == "News":
+        if span_tag and span_tag.get_text(strip=True) == article_type:
             article_link = article.find(name='a', attrs={'data-track-action': 'view article'})
             if article_link:
                 article_url = article_link.get('href')
@@ -84,9 +84,29 @@ def response_to_html(response):
         print('Content saved.')
 
 
+def get_next_page_urls(url: str, narticles: int):
+    next_urls = [url]
+    for _ in range(narticles):
+        response = requests.get(next_urls[-1])
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        next_tag = soup.find(name='li',
+                             attrs={'data-page': 'next', 'class': 'c-pagination__item', 'data-test': 'page-next'})
+        if next_tag:
+            url_tag = next_tag.find(name='a', attrs={'class': 'c-pagination__link'})
+            if url_tag:
+                next_url = url_tag.get('href')
+                next_urls.append('https://www.nature.com' + next_url)
+    return next_urls
+
+
 def main() -> None:
     try:
         url = 'https://www.nature.com/nature/articles?sort=PubDate&year=2020'
+        # narticles = int(input())
+        # article_type = input()
+        next_page_urls = get_next_page_urls(url, 4)
+        print(next_page_urls)
 
     except InvalidPageException as e:
         print(f'Error: {e}')
